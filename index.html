@@ -39,7 +39,7 @@
 
 <hr>
 
-<h2>Übung: Terme addieren & subtrahieren</h2>
+<h1>Übung: Terme addieren & subtrahieren</h1>
 <div id="scoreAdd">Aufgabe 1 von 10 – Punkte: 0</div>
 <div id="taskAdd">lade...</div>
 
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   function newTask(){
     resultEl.innerText="";answerEl.value="";
     if(round>totalRounds){
-      taskEl.innerText="🎉 Runde fertig!";
+      taskEl.innerText="🎉 Übungsrunde fertig!";
       resultEl.style.color="green";
       resultEl.innerText=`Endstand: ${score}/${totalRounds} Punkte.`;
       newBtn.textContent="Neue Runde";
@@ -273,3 +273,4 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 </body>
 </html>
+
