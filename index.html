@@ -53,10 +53,25 @@
     font-size:1.1em;
   }
   .shortcutButtons button:hover { background:#ccc; }
+
+  /* Buttons nur auf kleinen Bildschirmen anzeigen */
+  @media (min-width: 700px) {
+    .shortcutButtons {
+      display: none;
+    }
+  }
+
+  /* Handy: größere Buttons, bessere Touchfläche */
+  @media (max-width: 700px) {
+    .shortcutButtons button {
+      padding: 8px 14px;
+      font-size: 1.3em;
+    }
+  }
 </style>
 </head>
 <body>
-<h2>Term-Multiplikation</h2>
+<h1>Term-Multiplikation</h1>
 <div id="score">Runde 1 von 10 – Punkte: 0</div>
 <div id="task">lade...</div>
 
@@ -102,9 +117,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   function scrollIntoViewOnFocus(el) {
     el.addEventListener("focus", () => {
       lastFocusedInput = el;
+      // Schnellere und direkte Reaktion
       setTimeout(() => {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 300);
+        el.scrollIntoView({ behavior: "instant", block: "center" });
+      }, 100);
     });
   }
   [answerEl, answerAdd].forEach(scrollIntoViewOnFocus);
@@ -120,7 +136,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     const pos = start + symbol.length;
     requestAnimationFrame(()=>{
       target.selectionStart = target.selectionEnd = pos;
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.scrollIntoView({ behavior: "instant", block: "center" });
     });
   };
 
