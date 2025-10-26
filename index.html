@@ -1,153 +1,148 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Term-Multiplikation & Binome</title>
 <style>
   body {
     font-family: system-ui, Arial, sans-serif;
-    background: linear-gradient(to bottom right, #f0f4ff, #e0f7fa);
+    background: linear-gradient(to bottom right,#f0f4ff,#e0f7fa);
     text-align: center;
-    margin-top: 50px;
+    margin-top: 40px;
   }
-  h1 { color: #333; }
-  #task { font-size: 2em; margin: 20px; }
-  #result { font-size: 1.3em; margin: 15px; font-weight: bold; }
-  input {
-    padding: 10px;
-    font-size: 1em;
-    width: 200px;
-    text-align: center;
+  h1 {color:#333;}
+  #task{font-size:2em;margin:20px;}
+  #result{font-size:1.3em;margin:15px;font-weight:bold;}
+  #score{font-size:1.1em;margin:10px;color:#333;}
+  input{
+    padding:10px;font-size:1em;width:220px;text-align:center;
   }
-  button {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 18px;
-    margin: 6px;
-    font-size: 1em;
-    border-radius: 8px;
-    cursor: pointer;
+  button{
+    background:#007bff;color:white;border:none;padding:10px 18px;
+    margin:6px;font-size:1em;border-radius:8px;cursor:pointer;
   }
-  button:hover { background: #0056b3; }
+  button:hover{background:#0056b3;}
 </style>
 </head>
 <body>
 <h1>Übung: Term-Multiplikation & Binome</h1>
+<div id="score">Runde 1 von 10 – Punkte: 0</div>
 <div id="task">lade...</div>
 
-<input type="text" id="answer" placeholder="Deine Lösung" autocomplete="off">
-<br>
+<input type="text" id="answer" placeholder="Deine Lösung" autocomplete="off"><br>
 <button id="checkBtn">Prüfen</button>
 <button id="newBtn">Neue Aufgabe</button>
 
 <p id="result"></p>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
+  const taskEl=document.getElementById("task");
+  const answerEl=document.getElementById("answer");
+  const resultEl=document.getElementById("result");
+  const checkBtn=document.getElementById("checkBtn");
+  const newBtn=document.getElementById("newBtn");
+  const scoreEl=document.getElementById("score");
 
-  const taskEl = document.getElementById("task");
-  const answerEl = document.getElementById("answer");
-  const resultEl = document.getElementById("result");
-  const checkBtn = document.getElementById("checkBtn");
-  const newBtn = document.getElementById("newBtn");
-  let correctSolution = "";
+  const COEFFS=[2,3,4,5,6,7,8,9];
+  const VARS=['a','b','m','n','p','q','x','y'];
+  let correctSolution="";
+  let round=1,score=0,totalRounds=10;
 
-  function randomSign() { return Math.random() < 0.5 ? '-' : '+'; }
-  function randomNumber() { return Math.floor(Math.random() * 9) + 1; }
-  function randomVariable() { return ['x','y','a','b'][Math.floor(Math.random() * 4)]; }
-  function simplify(s1,s2) { return s1 === s2 ? '+' : '-'; }
-  function randomChoice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+  function randomChoice(a){return a[Math.floor(Math.random()*a.length)];}
+  function randomSign(){return Math.random()<0.5?'-':'+';}
+  function randomCoeff(){return randomChoice(COEFFS);}
+  function randomVar(){return randomChoice(VARS);}
+  function simplify(s1,s2){return s1===s2?'+':'-';}
+  function formatCoeff(n,isVar){if(!isVar)return String(n);
+    if(n===1)return"";if(n===-1)return"-";return String(n);}
+  function sortVars(v1,v2){return [v1,v2].sort().join('');}
 
-  function formatCoeff(num, variable) {
-    if (!variable) return num;
-    if (num === 1) return "";
-    if (num === -1) return "-";
-    return num;
-  }
-
-  function sortVars(v1, v2) {
-    return [v1, v2].sort().join('');
-  }
-
-  function createSimpleTask() {
-    const s1 = randomSign(), s2 = randomSign();
-    const n1 = randomNumber(), n2 = randomNumber();
-    const v1 = randomVariable(), v2 = randomVariable();
-
-    const aufgabe = `(${s1}${n1}${v1}) × (${s2}${n2}${v2}) = ?`;
-    const sign = simplify(s1, s2);
-    const product = n1 * n2;
-    let coeff = (sign === '-') ? -product : product;
-
-    if (v1 === v2) {
-      correctSolution = `${formatCoeff(coeff, true)}${v1}²`;
-    } else {
-      const sorted = sortVars(v1, v2);
-      correctSolution = `${formatCoeff(coeff, true)}${sorted}`;
-    }
+  // einfache Terme
+  function createSimpleTask(){
+    const sameVar=Math.random()<0.5; // Hälfte gleiche Variablen
+    const s1=randomSign(),s2=randomSign();
+    const n1=randomCoeff(),n2=randomCoeff();
+    let v1=randomVar(),v2=randomVar();
+    if(!sameVar){while(v2===v1)v2=randomVar();}
+    else v2=v1;
+    const aufgabe=`(${s1}${n1}${v1}) × (${s2}${n2}${v2}) = ?`;
+    const sign=simplify(s1,s2);
+    let coeff=(sign==='-')?-n1*n2:n1*n2;
+    if(v1===v2)correctSolution=`${formatCoeff(coeff,true)}${v1}²`;
+    else correctSolution=`${formatCoeff(coeff,true)}${sortVars(v1,v2)}`;
     return aufgabe;
   }
 
-  function createBinomTask() {
-    const v = randomVariable();
-    const a = randomChoice([1,2,3]);
-    const b = randomChoice([1,2,3,4]);
-    const c = randomChoice([1,2,3,4]);
-    const s1 = randomSign();
-    const s2 = randomSign();
-
-    const term = `(${a}${v} ${s1} ${b})(${a}${v} ${s2} ${c}) = ?`;
-
-    const signB = s1 === '+' ? 1 : -1;
-    const signC = s2 === '+' ? 1 : -1;
-    const bc = signB * signC * b * c;
-    const xCoeff = a * (signB * b + signC * c);
-    const a2 = a * a;
-
-    let solution = `${formatCoeff(a2, true)}${v}²`;
-    if (xCoeff > 0) solution += ` + ${formatCoeff(xCoeff, true)}${v}`;
-    else if (xCoeff < 0) solution += ` - ${formatCoeff(Math.abs(xCoeff), true)}${v}`;
-    if (bc > 0) solution += ` + ${bc}`;
-    else if (bc < 0) solution += ` - ${Math.abs(bc)}`;
-
-    correctSolution = solution;
+  // allgemeine Binome
+  function createGeneralBinom(){
+    const v=randomVar(),a=randomCoeff(),b=randomCoeff(),c=randomCoeff();
+    const s1=randomSign(),s2=randomSign();
+    const term=`(${a}${v} ${s1} ${b})(${a}${v} ${s2} ${c}) = ?`;
+    const sb=s1==='+'?1:-1, sc=s2==='+'?1:-1;
+    const a2=a*a, xCoeff=a*(sb*b+sc*c), bc=sb*sc*b*c;
+    let sol=`${formatCoeff(a2,true)}${v}²`;
+    if(xCoeff>0)sol+=` + ${formatCoeff(xCoeff,true)}${v}`;
+    else if(xCoeff<0)sol+=` - ${formatCoeff(Math.abs(xCoeff),true)}${v}`;
+    if(bc>0)sol+=` + ${bc}`; else if(bc<0)sol+=` - ${Math.abs(bc)}`;
+    correctSolution=sol;
     return term.replace(/\s+/g,' ');
   }
 
-  function newTask() {
-    resultEl.innerText = "";
-    answerEl.value = "";
-    const isBinom = Math.random() < 0.4;
-    const aufgabe = isBinom ? createBinomTask() : createSimpleTask();
-    taskEl.innerText = aufgabe;
+  // (a v + b)(a v - b)
+  function createPlusMinusBinom(){
+    const v=randomVar(),a=randomCoeff(),b=randomCoeff();
+    correctSolution=`${formatCoeff(a*a,true)}${v}² - ${b*b}`;
+    return `(${a}${v} + ${b})(${a}${v} - ${b}) = ?`;
   }
 
-  function checkAnswer() {
-    const input = answerEl.value.replace(/\s+/g,'');
-    const normalizedCorrect = correctSolution.replace(/\s+/g,'').replace(/²/g,'^2').toLowerCase();
-    const normalizedInput = input.replace(/²/g,'^2').toLowerCase();
-    if (!input) {
-      resultEl.style.color = "gray";
-      resultEl.innerText = "Bitte gib eine Lösung ein.";
+  // neue Aufgabe (3 Typen gemischt)
+  function newTask(){
+    resultEl.innerText="";answerEl.value="";
+    if(round>totalRounds){
+      taskEl.innerText="🎉 Runde fertig!";
+      resultEl.style.color="green";
+      resultEl.innerText=`Endstand: ${score}/${totalRounds} Punkte.`;
+      newBtn.textContent="Neue Runde";
+      round=1;score=0;
       return;
     }
-    if (normalizedInput === normalizedCorrect) {
-      resultEl.style.color = "green";
-      resultEl.innerText = "✅ Richtig! Super gemacht!";
-    } else {
-      resultEl.style.color = "red";
-      resultEl.innerText = `❌ Falsch! Richtige Lösung: ${correctSolution}`;
-    }
+    const r=Math.random();
+    let aufgabe;
+    if(r<0.45)aufgabe=createSimpleTask();
+    else if(r<0.80)aufgabe=createGeneralBinom();
+    else aufgabe=createPlusMinusBinom();
+    taskEl.innerText=aufgabe;
+    scoreEl.innerText=`Runde ${round} von ${totalRounds} – Punkte: ${score}`;
   }
 
-  checkBtn.addEventListener("click", checkAnswer);
-  newBtn.addEventListener("click", newTask);
-  answerEl.addEventListener("keydown", e => { if (e.key === "Enter") checkAnswer(); });
+  function checkAnswer(){
+    const input=answerEl.value.trim();
+    if(!input){
+      resultEl.style.color="gray";
+      resultEl.innerText="Bitte gib eine Lösung ein.";return;
+    }
+    const norm=s=>s.replace(/\s+/g,'').replace(/²/g,'^2').toLowerCase();
+    const user=norm(input),corr=norm(correctSolution);
+    if(user===corr){
+      resultEl.style.color="green";
+      resultEl.innerText="✅ Richtig!";
+      score++;
+    }else{
+      resultEl.style.color="red";
+      resultEl.innerText=`❌ Falsch! Richtig: ${correctSolution}`;
+    }
+    round++;
+    scoreEl.innerText=`Runde ${round>totalRounds?totalRounds:round} von ${totalRounds} – Punkte: ${score}`;
+  }
 
+  checkBtn.addEventListener("click",checkAnswer);
+  newBtn.addEventListener("click",newTask);
+  answerEl.addEventListener("keydown",e=>{if(e.key==="Enter")checkAnswer();});
   newTask();
 });
 </script>
 </body>
 </html>
+
