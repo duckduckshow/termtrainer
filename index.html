@@ -18,7 +18,9 @@
     scroll-behavior: smooth;
   }
   h1,h2 { color:#333; margin:10px 0; }
-  #task,#taskAdd { font-size:1.8em; margin:15px; word-wrap:break-word; }
+  #task,#taskAddWrapper { font-size:1.8em; margin:15px; word-wrap:break-word; display:inline-block; position:relative; }
+  #taskAdd { display:inline; }
+  #eqMark { font-size:1.1em; margin-left:6px; color:#333; white-space:nowrap; vertical-align:middle; }
   #result,#resultAdd { font-size:1.3em; margin:10px; font-weight:bold; }
   #score,#scoreAdd { font-size:1.1em; margin:8px; color:#333; }
   input {
@@ -70,10 +72,10 @@
 </head>
 <body>
 <h1>Term-Multiplikation</h1>
-<div id="score">Runde 1 von 10 – Punkte: 0</div>
+<div id="score">Aufgabe 1 von 10 – Punkte: 0</div>
 <div id="task">lade...</div>
 
-<input type="text" id="answer" placeholder="Deine Lösung" autocomplete="off"><br>
+<input type="text" id="answer" placeholder="Deine Lösung" autocomplete="off" spellcheck="false"><br>
 <div id="shortcutMul" class="shortcutButtons">
   <button type="button" onclick="insertSymbol('²')">²</button>
   <button type="button" onclick="insertSymbol('³')">³</button>
@@ -87,9 +89,11 @@
 
 <h2>Addition & Subtraktion</h2>
 <div id="scoreAdd">Aufgabe 1 von 10 – Punkte: 0</div>
-<div id="taskAdd">lade...</div>
+<div id="taskAddWrapper">
+  <span id="taskAdd">lade...</span><span id="eqMark">= ?</span>
+</div>
 
-<input type="text" id="answerAdd" placeholder="Zusammengefasster Term" autocomplete="off"><br>
+<input type="text" id="answerAdd" placeholder="Zusammengefasster Term" autocomplete="off" spellcheck="false"><br>
 <div id="shortcutAdd" class="shortcutButtons">
   <button type="button" onclick="insertSymbol('²')">²</button>
   <button type="button" onclick="insertSymbol('³')">³</button>
@@ -177,11 +181,11 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   function createGeneralBinom(){
     let v1 = randomVar(), v2 = randomVar();
-    if (Math.random() < 0.5) v2 = v1; // etwa 50% gleiche Variable
+    if (Math.random() < 0.5) v2 = v1;
 
     const a1 = randomCoeff();
     let a2 = randomCoeff();
-    if (Math.random() < 0.5) a2 = a1; // etwa 50% gleiche Koeffizienten
+    if (Math.random() < 0.5) a2 = a1;
 
     const b = randomCoeff(), c = randomCoeff();
     const s1 = randomSign(), s2 = randomSign();
@@ -229,7 +233,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   function newTask(){
     resultEl.innerText="";answerEl.value="";
     if(round>totalRounds){
-      taskEl.innerText="🎉 Runde fertig!";
+      taskEl.innerText="🎉 Übungsrunde fertig!";
       resultEl.style.color="green";
       resultEl.innerText=`Endstand: ${score}/${totalRounds} Punkte.`;
       newBtn.textContent="Neue Runde";
@@ -242,7 +246,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     else if(r<0.80)aufgabe=createGeneralBinom();
     else aufgabe=createPlusMinusBinom();
     taskEl.innerText=aufgabe;
-    scoreEl.innerText=`Runde ${round} von ${totalRounds} – Punkte: ${score}`;
+    scoreEl.innerText=`Aufgabe ${round} von ${totalRounds} – Punkte: ${score}`;
   }
 
   function checkAnswer(){
@@ -251,10 +255,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultEl.style.color="gray";
       resultEl.innerText="Bitte gib eine Lösung ein.";return;
     }
-
-    // 🔹 Tastatur auf Mobilgeräten schließen
-    answerEl.blur();
-
+    answerEl.blur(); // Tastatur schließen
     if(normMul(input)===normMul(correctSolution)){
       resultEl.style.color="green";
       resultEl.innerText="✅ Richtig!";
@@ -264,7 +265,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultEl.innerText=`❌ Falsch! Richtig: ${correctSolution}`;
     }
     round++;
-    scoreEl.innerText=`Runde ${Math.min(round,totalRounds)} von ${totalRounds} – Punkte: ${score}`;
+    scoreEl.innerText=`Aufgabe ${Math.min(round,totalRounds)} von ${totalRounds} – Punkte: ${score}`;
   }
 
   checkBtn.addEventListener("click",checkAnswer);
@@ -294,7 +295,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       else t=`${coeff}${variable}${exp>1?superExp[exp]:""}`;
       terms.push(t);
     }
-    const display=terms.join(" + ").replace(/\+\s*-/g," - ") + " = ?";
+    const display=terms.join(" + ").replace(/\+\s*-/g," - ");
 
     let collected={};
     for(const t of terms){
@@ -356,10 +357,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultAdd.style.color="gray";
       resultAdd.innerText="Bitte gib eine Lösung ein.";return;
     }
-
-    // 🔹 Tastatur auf Mobilgeräten schließen
-    answerAdd.blur();
-
+    answerAdd.blur(); // Tastatur schließen
     if(normAdd(input)===normAdd(correctSum)){
       resultAdd.style.color="green";
       resultAdd.innerText="✅ Richtig!";
