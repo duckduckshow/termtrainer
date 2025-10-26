@@ -2,36 +2,68 @@
 <html lang="de">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>Termtrainer – Multiplikation & Addition</title>
 <style>
   body {
     font-family: system-ui, Arial, sans-serif;
     background: linear-gradient(to bottom right,#f0f4ff,#e0f7fa);
     text-align: center;
-    margin-top: 30px;
+    margin: 0;
+    padding: 20px;
   }
-  h1,h2{color:#333;margin:10px 0;}
-  #task,#taskAdd{font-size:1.8em;margin:15px;}
-  #result,#resultAdd{font-size:1.3em;margin:10px;font-weight:bold;}
-  #score,#scoreAdd{font-size:1.1em;margin:8px;color:#333;}
-  input{
-    padding:8px;font-size:1em;width:220px;text-align:center;
+  h1,h2 { color:#333; margin:10px 0; }
+  #task,#taskAdd { font-size:1.8em; margin:15px; word-wrap:break-word; }
+  #result,#resultAdd { font-size:1.3em; margin:10px; font-weight:bold; }
+  #score,#scoreAdd { font-size:1.1em; margin:8px; color:#333; }
+  input {
+    padding:10px;
+    font-size:1.2em;
+    width:80%;
+    max-width:300px;
+    text-align:center;
+    border-radius:8px;
+    border:1px solid #aaa;
   }
-  button{
-    background:#007bff;color:white;border:none;padding:8px 16px;
-    margin:5px;font-size:1em;border-radius:8px;cursor:pointer;
+  button {
+    background:#007bff;
+    color:white;
+    border:none;
+    padding:10px 18px;
+    margin:6px;
+    font-size:1em;
+    border-radius:8px;
+    cursor:pointer;
   }
-  button:hover{background:#0056b3;}
-  hr{margin:30px auto;width:60%;border:1px solid #ccc;}
+  button:hover { background:#0056b3; }
+  hr { margin:30px auto; width:70%; border:1px solid #ccc; }
+
+  /* Eingabehilfe-Buttons */
+  #shortcutButtons {
+    margin-top:8px;
+  }
+  #shortcutButtons button {
+    background:#e3e3e3;
+    color:#000;
+    border:1px solid #bbb;
+    padding:6px 10px;
+    font-size:1.1em;
+  }
+  #shortcutButtons button:hover {
+    background:#ccc;
+  }
 </style>
 </head>
 <body>
 <h1>Übung: Term-Multiplikation & Binome</h1>
-<div id="score">Aufgabe 1 von 10 – Punkte: 0</div>
+<div id="score">Runde 1 von 10 – Punkte: 0</div>
 <div id="task">lade...</div>
 
 <input type="text" id="answer" placeholder="Deine Lösung" autocomplete="off"><br>
+<div id="shortcutButtons">
+  <button type="button" onclick="insertSymbol('²')">²</button>
+  <button type="button" onclick="insertSymbol('³')">³</button>
+</div>
 <button id="checkBtn">Prüfen</button>
 <button id="newBtn">Neue Aufgabe</button>
 
@@ -39,18 +71,42 @@
 
 <hr>
 
-<h1>Übung: Terme addieren & subtrahieren</h1>
+<h2>Übung: Terme addieren & subtrahieren</h2>
 <div id="scoreAdd">Aufgabe 1 von 10 – Punkte: 0</div>
 <div id="taskAdd">lade...</div>
 
 <input type="text" id="answerAdd" placeholder="Zusammengefasster Term" autocomplete="off"><br>
+<div id="shortcutButtons">
+  <button type="button" onclick="insertSymbol('²')">²</button>
+  <button type="button" onclick="insertSymbol('³')">³</button>
+  <button type="button" onclick="insertSymbol('+')">+</button>
+  <button type="button" onclick="insertSymbol('-')">−</button>
+</div>
 <button id="checkBtnAdd">Prüfen</button>
 <button id="newBtnAdd">Neue Aufgabe</button>
 
 <p id="resultAdd"></p>
 
+<p style="font-size:0.8em;color:#555;margin-top:40px;">
+Diese Seite speichert keine persönlichen Daten und läuft vollständig lokal im Browser.<br>
+© 2025 Termtrainer für den Mathematikunterricht
+</p>
+
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
+
+  // ------------------------- HILFSFUNKTION FÜR MOBILE BUTTONS -------------------------
+  window.insertSymbol = function(symbol) {
+    const active = document.activeElement;
+    if (active && active.tagName === "INPUT") {
+      const start = active.selectionStart;
+      const end = active.selectionEnd;
+      const text = active.value;
+      active.value = text.slice(0, start) + symbol + text.slice(end);
+      active.focus();
+      active.selectionStart = active.selectionEnd = start + symbol.length;
+    }
+  };
 
   // ------------------------- MULTIPLIKATIONSTEIL -------------------------
   const COEFFS=[2,3,4,5,6,7,8,9];
@@ -119,7 +175,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   function newTask(){
     resultEl.innerText="";answerEl.value="";
     if(round>totalRounds){
-      taskEl.innerText="🎉 Übungsrunde fertig!";
+      taskEl.innerText="🎉 Runde fertig!";
       resultEl.style.color="green";
       resultEl.innerText=`Endstand: ${score}/${totalRounds} Punkte.`;
       newBtn.textContent="Neue Runde";
@@ -162,7 +218,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 
 
   // ------------------------- ADDITIONSTEIL -------------------------
-
   const taskAdd=document.getElementById("taskAdd");
   const answerAdd=document.getElementById("answerAdd");
   const resultAdd=document.getElementById("resultAdd");
@@ -171,11 +226,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   const scoreAdd=document.getElementById("scoreAdd");
 
   let correctSum="",pointsAdd=0,roundAdd=1,totalAdd=10;
-
   const superExp={2:"²",3:"³"};
 
   function createAdditionTask(){
-    const termCount=Math.floor(Math.random()*4)+2; // 2–5 Terme
+    const termCount=Math.floor(Math.random()*4)+2;
     const variable=randomVar();
     let terms=[];
     for(let i=0;i<termCount;i++){
@@ -188,7 +242,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     }
 
     const display=terms.join(" + ").replace(/\+\s*-/g," - ");
-
     let collected={};
     for(const t of terms){
       const match=t.match(/(-?\d+)([a-z])?(?:([²³]))?/);
@@ -273,5 +326,3 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 </body>
 </html>
-
-
