@@ -17,17 +17,34 @@
     padding: 20px;
     scroll-behavior: smooth;
   }
-  h1,h2 { color:#333; margin:10px 0; }
+
+  /* Einheitliche Überschriften */
+  h1, h2 {
+    color:#333;
+    margin:10px 0;
+    font-size:1.6em;
+    font-weight:600;
+  }
+
   #task { font-size:1.8em; margin:15px auto; word-wrap:break-word; display:block; }
   #taskAddWrapper { display:block; font-size:1.8em; margin:15px auto; }
   #taskAdd { display:inline; }
-  #eqMark { font-size:1.1em; margin-left:6px; color:#333; white-space:nowrap; vertical-align:middle; }
+  #eqMark {
+    font-size:1em;
+    margin-left:6px;
+    color:#333;
+    white-space:nowrap;
+    vertical-align:middle;
+    position: relative;
+    top: -0.1em;
+  }
   @media (max-width: 600px) {
-    /* =? bei Platzmangel verbergen */
     #eqMark { display:none; }
   }
+
   #result,#resultAdd { font-size:1.3em; margin:10px; font-weight:bold; }
   #score,#scoreAdd { font-size:1.1em; margin:8px; color:#333; }
+
   input {
     padding:10px;
     font-size:1.2em;
@@ -37,6 +54,8 @@
     border-radius:8px;
     border:1px solid #aaa;
   }
+  input:focus { outline: none; border-color:#007bff; }
+
   button {
     background:#007bff;
     color:white;
@@ -48,9 +67,9 @@
     cursor:pointer;
   }
   button:hover { background:#0056b3; }
+
   hr { margin:30px auto; width:70%; border:1px solid #ccc; }
 
-  /* Eingabehilfe-Buttons */
   .shortcutButtons { margin-top:8px; }
   .shortcutButtons button {
     background:#e3e3e3;
@@ -61,12 +80,10 @@
   }
   .shortcutButtons button:hover { background:#ccc; }
 
-  /* Buttons nur auf großen Bildschirmen ausblenden */
   @media (min-width: 700px) {
     .shortcutButtons { display: none; }
   }
 
-  /* Handy: größere Buttons, bessere Touchfläche */
   @media (max-width: 700px) {
     .shortcutButtons button {
       padding: 8px 14px;
@@ -76,7 +93,7 @@
 </style>
 </head>
 <body>
-<h2>Term-Multiplikation</h2>
+<h1>Term-Multiplikation</h1>
 <div id="score">Aufgabe 1 von 10 – Punkte: 0</div>
 <div id="task">lade...</div>
 
@@ -95,7 +112,7 @@
 <h2>Addition & Subtraktion</h2>
 <div id="scoreAdd">Aufgabe 1 von 10 – Punkte: 0</div>
 <div id="taskAddWrapper">
-  <span id="taskAdd">lade...</span><span id="eqMark"> = ?</span>
+  <span id="taskAdd">lade...</span><span id="eqMark">= ?</span>
 </div>
 
 <input type="text" id="answerAdd" placeholder="Zusammengefasster Term" autocomplete="off" spellcheck="false"><br>
@@ -120,7 +137,6 @@ document.addEventListener("DOMContentLoaded",()=>{
   const answerAdd  = document.getElementById("answerAdd");
   let lastFocusedInput = answerEl;
 
-  // Scrollt Eingabefeld sichtbar bei Fokus (mobil)
   function scrollIntoViewOnFocus(el) {
     el.addEventListener("focus", () => {
       lastFocusedInput = el;
@@ -131,7 +147,6 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
   [answerEl, answerAdd].forEach(scrollIntoViewOnFocus);
 
-  // Symbol-Buttons für Hochzahlen
   window.insertSymbol = function(symbol) {
     const target = lastFocusedInput || answerEl;
     target.focus();
@@ -146,7 +161,6 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
   };
 
-  // Hilfsfunktionen
   const COEFFS=[2,3,4,5,6,7,8,9];
   const VARS=['a','b','m','n','p','q','x','y'];
   const randomChoice=a=>a[Math.floor(Math.random()*a.length)];
@@ -187,20 +201,15 @@ document.addEventListener("DOMContentLoaded",()=>{
   function createGeneralBinom(){
     let v1 = randomVar(), v2 = randomVar();
     if (Math.random() < 0.5) v2 = v1;
-
     const a1 = randomCoeff();
     let a2 = randomCoeff();
     if (Math.random() < 0.5) a2 = a1;
-
     const b = randomCoeff(), c = randomCoeff();
     const s1 = randomSign(), s2 = randomSign();
-
     const term = `(${a1}${v1} ${s1} ${b}) · (${a2}${v2} ${s2} ${c}) = ?`;
-
     const sb = s1 === '+' ? 1 : -1;
     const sc = s2 === '+' ? 1 : -1;
     const sameVar = v1 === v2;
-
     let sol = "";
     if (sameVar) {
       const a2v2 = a1 * a2;
@@ -216,7 +225,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       const ab = a1 * sc * c;
       const ac = a2 * sb * b;
       const bc = sb * sc * b * c;
-      sol = `${formatCoeff(a1a2, true)}${sortVars(v1, v2)}`; // alphabetische Reihenfolge
+      sol = `${formatCoeff(a1a2, true)}${sortVars(v1, v2)}`;
       if (ab > 0) sol += ` + ${formatCoeff(ab, true)}${v1}`;
       else if (ab < 0) sol += ` - ${formatCoeff(Math.abs(ab), true)}${v1}`;
       if (ac > 0) sol += ` + ${formatCoeff(ac, true)}${v2}`;
@@ -224,7 +233,6 @@ document.addEventListener("DOMContentLoaded",()=>{
       if (bc > 0) sol += ` + ${bc}`;
       else if (bc < 0) sol += ` - ${Math.abs(bc)}`;
     }
-
     correctSolution = sol;
     return term.replace(/\s+/g, ' ');
   }
