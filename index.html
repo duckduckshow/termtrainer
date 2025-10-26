@@ -5,12 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>Termtrainer – Multiplikation & Addition</title>
 <style>
+  html, body {
+    height: 100%;
+    overflow-x: hidden;
+  }
   body {
     font-family: system-ui, Arial, sans-serif;
     background: linear-gradient(to bottom right,#f0f4ff,#e0f7fa);
     text-align: center;
     margin: 0;
     padding: 20px;
+    scroll-behavior: smooth;
   }
   h1,h2 { color:#333; margin:10px 0; }
   #task,#taskAdd { font-size:1.8em; margin:15px; word-wrap:break-word; }
@@ -89,16 +94,22 @@ Diese Seite speichert keine persönlichen Daten und läuft vollständig lokal im
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
 
-  // ------------------------- Fokus-Merker + Button-Einfügen -------------------------
   const answerEl   = document.getElementById("answer");
   const answerAdd  = document.getElementById("answerAdd");
   let lastFocusedInput = answerEl;
 
-  [answerEl, answerAdd].forEach(inp=>{
-    inp.addEventListener("focus", ()=> { lastFocusedInput = inp; });
-    inp.addEventListener("click", ()=> { lastFocusedInput = inp; });
-  });
+  // Fokus sichtbar halten, wenn Tastatur aufgeht
+  function scrollIntoViewOnFocus(el) {
+    el.addEventListener("focus", () => {
+      lastFocusedInput = el;
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 300); // kleine Verzögerung, bis Tastatur offen ist
+    });
+  }
+  [answerEl, answerAdd].forEach(scrollIntoViewOnFocus);
 
+  // Symbol in aktuell aktives Feld einfügen
   window.insertSymbol = function(symbol) {
     const target = lastFocusedInput || answerEl;
     target.focus();
@@ -109,27 +120,24 @@ document.addEventListener("DOMContentLoaded",()=>{
     const pos = start + symbol.length;
     requestAnimationFrame(()=>{
       target.selectionStart = target.selectionEnd = pos;
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
     });
   };
 
-  // ------------------------- Gemeinsame Utils -------------------------
+  // --- Mathefunktionen & Logik ---
   const COEFFS=[2,3,4,5,6,7,8,9];
   const VARS=['a','b','m','n','p','q','x','y'];
-
   const randomChoice=a=>a[Math.floor(Math.random()*a.length)];
   const randomSign=()=>Math.random()<0.5?'-':'+';
   const randomCoeff=()=>randomChoice(COEFFS);
   const randomVar=()=>randomChoice(VARS);
   const simplify=(s1,s2)=>s1===s2?'+':'-';
-  const formatCoeff=(n,isVar)=>{
-    if(!isVar)return String(n);
-    if(n===1)return"";if(n===-1)return"-";return String(n);
-  };
+  const formatCoeff=(n,isVar)=>{if(!isVar)return String(n);if(n===1)return"";if(n===-1)return"-";return String(n)};
   const sortVars=(v1,v2)=>[v1,v2].sort().join('');
   const normMul = s => s.replace(/\s+/g,'').replace(/²/g,'^2').replace(/−/g,'-').toLowerCase();
   const normAdd = s => s.replace(/\s+/g,'').replace(/−/g,'-').toLowerCase();
 
-  // ------------------------- MULTIPLIKATIONSTEIL -------------------------
+  // --- MULTIPLIKATION ---
   const taskEl=document.getElementById("task");
   const resultEl=document.getElementById("result");
   const checkBtn=document.getElementById("checkBtn");
@@ -180,7 +188,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
 
   function newTask(){
-    resultEl.innerText=""; answerEl.value="";
+    resultEl.innerText="";answerEl.value="";
     if(round>totalRounds){
       taskEl.innerText="🎉 Runde fertig!";
       resultEl.style.color="green";
@@ -218,10 +226,10 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   checkBtn.addEventListener("click",checkAnswer);
   newBtn.addEventListener("click",newTask);
-  answerEl.addEventListener("keydown",e=>{ if(e.key==="Enter")checkAnswer(); });
+  answerEl.addEventListener("keydown",e=>{if(e.key==="Enter")checkAnswer();});
   newTask();
 
-  // ------------------------- ADDITIONSTEIL -------------------------
+  // --- ADDITION ---
   const taskAdd=document.getElementById("taskAdd");
   const resultAdd=document.getElementById("resultAdd");
   const checkBtnAdd=document.getElementById("checkBtnAdd");
