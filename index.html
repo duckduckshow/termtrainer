@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   // einfache Terme
   function createSimpleTask(){
-    const sameVar=Math.random()<0.5; // Hälfte gleiche Variablen
+    const sameVar=Math.random()<0.5;
     const s1=randomSign(),s2=randomSign();
     const n1=randomCoeff(),n2=randomCoeff();
     let v1=randomVar(),v2=randomVar();
@@ -75,17 +75,28 @@ document.addEventListener("DOMContentLoaded",()=>{
     return aufgabe;
   }
 
-  // allgemeine Binome
+  // allgemeine Binome (jetzt 50 % gleiche erste Glieder)
   function createGeneralBinom(){
-    const v=randomVar(),a=randomCoeff(),b=randomCoeff(),c=randomCoeff();
+    const v=randomVar();
+    const a1=randomCoeff();
+    const a2=Math.random()<0.5 ? a1 : randomCoeff(); // 50 % gleich, sonst neu
+    const b=randomCoeff(),c=randomCoeff();
     const s1=randomSign(),s2=randomSign();
-    const term=`(${a}${v} ${s1} ${b})(${a}${v} ${s2} ${c}) = ?`;
+    const term=`(${a1}${v} ${s1} ${b})(${a2}${v} ${s2} ${c}) = ?`;
+
+    // Berechnung
     const sb=s1==='+'?1:-1, sc=s2==='+'?1:-1;
-    const a2=a*a, xCoeff=a*(sb*b+sc*c), bc=sb*sc*b*c;
-    let sol=`${formatCoeff(a2,true)}${v}²`;
+    // (a1v + sb*b)(a2v + sc*c)
+    // = a1*a2*v² + v*(a1*sc*c + a2*sb*b) + sb*sc*b*c
+    const a2v2=a1*a2;
+    const xCoeff=(a1*sc*c)+(a2*sb*b);
+    const bc=sb*sc*b*c;
+
+    let sol=`${formatCoeff(a2v2,true)}${v}²`;
     if(xCoeff>0)sol+=` + ${formatCoeff(xCoeff,true)}${v}`;
     else if(xCoeff<0)sol+=` - ${formatCoeff(Math.abs(xCoeff),true)}${v}`;
     if(bc>0)sol+=` + ${bc}`; else if(bc<0)sol+=` - ${Math.abs(bc)}`;
+
     correctSolution=sol;
     return term.replace(/\s+/g,' ');
   }
@@ -97,7 +108,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     return `(${a}${v} + ${b})(${a}${v} - ${b}) = ?`;
   }
 
-  // neue Aufgabe (3 Typen gemischt)
+  // neue Aufgabe
   function newTask(){
     resultEl.innerText="";answerEl.value="";
     if(round>totalRounds){
