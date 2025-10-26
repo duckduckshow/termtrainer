@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Termtrainer – Multiplikation & Addition</title>
+<title>Termtrainer</title>
 <style>
   html, body {
     height: 100%;
@@ -56,7 +56,7 @@
 </style>
 </head>
 <body>
-<h1>Übung: Term-Multiplikation & Binome</h1>
+<h2>Term-Multiplikation</h2>
 <div id="score">Runde 1 von 10 – Punkte: 0</div>
 <div id="task">lade...</div>
 
@@ -72,7 +72,7 @@
 
 <hr>
 
-<h2>Übung: Terme addieren & subtrahieren</h2>
+<h2>Addition & Subtraktion</h2>
 <div id="scoreAdd">Aufgabe 1 von 10 – Punkte: 0</div>
 <div id="taskAdd">lade...</div>
 
@@ -98,18 +98,18 @@ document.addEventListener("DOMContentLoaded",()=>{
   const answerAdd  = document.getElementById("answerAdd");
   let lastFocusedInput = answerEl;
 
-  // Fokus sichtbar halten, wenn Tastatur aufgeht
+  // Scrollt Eingabefeld sichtbar bei Fokus (mobil)
   function scrollIntoViewOnFocus(el) {
     el.addEventListener("focus", () => {
       lastFocusedInput = el;
       setTimeout(() => {
         el.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 300); // kleine Verzögerung, bis Tastatur offen ist
+      }, 300);
     });
   }
   [answerEl, answerAdd].forEach(scrollIntoViewOnFocus);
 
-  // Symbol in aktuell aktives Feld einfügen
+  // Symbol-Buttons für Hochzahlen
   window.insertSymbol = function(symbol) {
     const target = lastFocusedInput || answerEl;
     target.focus();
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     });
   };
 
-  // --- Mathefunktionen & Logik ---
+  // Hilfsfunktionen
   const COEFFS=[2,3,4,5,6,7,8,9];
   const VARS=['a','b','m','n','p','q','x','y'];
   const randomChoice=a=>a[Math.floor(Math.random()*a.length)];
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   const normMul = s => s.replace(/\s+/g,'').replace(/²/g,'^2').replace(/−/g,'-').toLowerCase();
   const normAdd = s => s.replace(/\s+/g,'').replace(/−/g,'-').toLowerCase();
 
-  // --- MULTIPLIKATION ---
+  // ----------------- MULTIPLIKATION -----------------
   const taskEl=document.getElementById("task");
   const resultEl=document.getElementById("result");
   const checkBtn=document.getElementById("checkBtn");
@@ -229,7 +229,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   answerEl.addEventListener("keydown",e=>{if(e.key==="Enter")checkAnswer();});
   newTask();
 
-  // --- ADDITION ---
+  // ----------------- ADDITION -----------------
   const taskAdd=document.getElementById("taskAdd");
   const resultAdd=document.getElementById("resultAdd");
   const checkBtnAdd=document.getElementById("checkBtnAdd");
@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       else t=`${coeff}${variable}${exp>1?superExp[exp]:""}`;
       terms.push(t);
     }
-    const display=terms.join(" + ").replace(/\+\s*-/g," - ");
+    const display=terms.join(" + ").replace(/\+\s*-/g," - ") + " = ?";
 
     let collected={};
     for(const t of terms){
