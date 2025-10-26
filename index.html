@@ -179,50 +179,52 @@ document.addEventListener("DOMContentLoaded",()=>{
     return aufgabe;
   }
 
-  function createGeneralBinom(){
-    let v1 = randomVar(), v2 = randomVar();
-    if (Math.random() < 0.5) v2 = v1;
+function createGeneralBinom(){
+  let v1 = randomVar(), v2 = randomVar();
+  if (Math.random() < 0.5) v2 = v1; // ~50% gleiche Variable
 
-    const a1 = randomCoeff();
-    let a2 = randomCoeff();
-    if (Math.random() < 0.5) a2 = a1;
+  const a1 = randomCoeff();
+  let a2 = randomCoeff();
+  if (Math.random() < 0.5) a2 = a1; // ~50% gleiche Koeffizienten
 
-    const b = randomCoeff(), c = randomCoeff();
-    const s1 = randomSign(), s2 = randomSign();
+  const b = randomCoeff(), c = randomCoeff();
+  const s1 = randomSign(), s2 = randomSign();
 
-    const term = `(${a1}${v1} ${s1} ${b}) · (${a2}${v2} ${s2} ${c}) = ?`;
+  const term = `(${a1}${v1} ${s1} ${b}) · (${a2}${v2} ${s2} ${c}) = ?`;
 
-    const sb = s1 === '+' ? 1 : -1;
-    const sc = s2 === '+' ? 1 : -1;
-    const sameVar = v1 === v2;
+  const sb = s1 === '+' ? 1 : -1;
+  const sc = s2 === '+' ? 1 : -1;
+  const sameVar = v1 === v2;
 
-    let sol = "";
-    if (sameVar) {
-      const a2v2 = a1 * a2;
-      const xCoeff = (a1 * sc * c) + (a2 * sb * b);
-      const bc = sb * sc * b * c;
-      sol = `${formatCoeff(a2v2, true)}${v1}²`;
-      if (xCoeff > 0) sol += ` + ${formatCoeff(xCoeff, true)}${v1}`;
-      else if (xCoeff < 0) sol += ` - ${formatCoeff(Math.abs(xCoeff), true)}${v1}`;
-      if (bc > 0) sol += ` + ${bc}`;
-      else if (bc < 0) sol += ` - ${Math.abs(bc)}`;
-    } else {
-      const a1a2 = a1 * a2;
-      const ab = a1 * sc * c;
-      const ac = a2 * sb * b;
-      const bc = sb * sc * b * c;
-      sol = `${formatCoeff(a1a2, true)}${v1}${v2}`;
-      if (ab > 0) sol += ` + ${formatCoeff(ab, true)}${v1}`;
-      else if (ab < 0) sol += ` - ${formatCoeff(Math.abs(ab), true)}${v1}`;
-      if (ac > 0) sol += ` + ${formatCoeff(ac, true)}${v2}`;
-      else if (ac < 0) sol += ` - ${formatCoeff(Math.abs(ac), true)}${v2}`;
-      if (bc > 0) sol += ` + ${bc}`;
-      else if (bc < 0) sol += ` - ${Math.abs(bc)}`;
-    }
-
-    correctSolution = sol;
-    return term.replace(/\s+/g, ' ');
+  let sol = "";
+  if (sameVar) {
+    const a2v2 = a1 * a2;
+    const xCoeff = (a1 * sc * c) + (a2 * sb * b);
+    const bc = sb * sc * b * c;
+    sol = `${formatCoeff(a2v2, true)}${v1}²`;
+    if (xCoeff > 0) sol += ` + ${formatCoeff(xCoeff, true)}${v1}`;
+    else if (xCoeff < 0) sol += ` - ${formatCoeff(Math.abs(xCoeff), true)}${v1}`;
+    if (bc > 0) sol += ` + ${bc}`;
+    else if (bc < 0) sol += ` - ${Math.abs(bc)}`;
+  } else {
+    const a1a2 = a1 * a2;
+    const ab = a1 * sc * c;
+    const ac = a2 * sb * b;
+    const bc = sb * sc * b * c;
+    // ▼ HIER der Fix: Variablen alphabetisch sortieren
+    sol = `${formatCoeff(a1a2, true)}${sortVars(v1, v2)}`;
+    if (ab > 0) sol += ` + ${formatCoeff(ab, true)}${v1}`;
+    else if (ab < 0) sol += ` - ${formatCoeff(Math.abs(ab), true)}${v1}`;
+    if (ac > 0) sol += ` + ${formatCoeff(ac, true)}${v2}`;
+    else if (ac < 0) sol += ` - ${formatCoeff(Math.abs(ac), true)}${v2}`;
+    if (bc > 0) sol += ` + ${bc}`;
+    else if (bc < 0) sol += ` - ${Math.abs(bc)}`;
   }
+
+  correctSolution = sol;
+  return term.replace(/\s+/g, ' ');
+}
+
 
   function createPlusMinusBinom(){
     const v=randomVar(),a=randomCoeff(),b=randomCoeff();
@@ -379,3 +381,4 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 </body>
 </html>
+
