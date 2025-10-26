@@ -67,7 +67,10 @@ document.addEventListener("DOMContentLoaded",()=>{
     let v1=randomVar(),v2=randomVar();
     if(!sameVar){while(v2===v1)v2=randomVar();}
     else v2=v1;
-    const aufgabe=`(${s1}${n1}${v1}) × (${s2}${n2}${v2}) = ?`;
+
+    // Multiplikationspunkt zwischen Monomen
+    const aufgabe=`(${s1}${n1}${v1}) · (${s2}${n2}${v2}) = ?`;
+
     const sign=simplify(s1,s2);
     let coeff=(sign==='-')?-n1*n2:n1*n2;
     if(v1===v2)correctSolution=`${formatCoeff(coeff,true)}${v1}²`;
@@ -79,15 +82,14 @@ document.addEventListener("DOMContentLoaded",()=>{
   function createGeneralBinom(){
     const v=randomVar();
     const a1=randomCoeff();
-    const a2=Math.random()<0.5 ? a1 : randomCoeff(); // 50 % gleich, sonst neu
+    const a2=Math.random()<0.5 ? a1 : randomCoeff();
     const b=randomCoeff(),c=randomCoeff();
     const s1=randomSign(),s2=randomSign();
-    const term=`(${a1}${v} ${s1} ${b})(${a2}${v} ${s2} ${c}) = ?`;
 
-    // Berechnung
+    // Multiplikationspunkt zwischen den Binomen
+    const term=`(${a1}${v} ${s1} ${b}) · (${a2}${v} ${s2} ${c}) = ?`;
+
     const sb=s1==='+'?1:-1, sc=s2==='+'?1:-1;
-    // (a1v + sb*b)(a2v + sc*c)
-    // = a1*a2*v² + v*(a1*sc*c + a2*sb*b) + sb*sc*b*c
     const a2v2=a1*a2;
     const xCoeff=(a1*sc*c)+(a2*sb*b);
     const bc=sb*sc*b*c;
@@ -104,11 +106,14 @@ document.addEventListener("DOMContentLoaded",()=>{
   // (a v + b)(a v - b)
   function createPlusMinusBinom(){
     const v=randomVar(),a=randomCoeff(),b=randomCoeff();
+
+    // Multiplikationspunkt auch hier
+    const term=`(${a}${v} + ${b}) · (${a}${v} - ${b}) = ?`;
+
     correctSolution=`${formatCoeff(a*a,true)}${v}² - ${b*b}`;
-    return `(${a}${v} + ${b})(${a}${v} - ${b}) = ?`;
+    return term;
   }
 
-  // neue Aufgabe
   function newTask(){
     resultEl.innerText="";answerEl.value="";
     if(round>totalRounds){
@@ -156,4 +161,3 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 </body>
 </html>
-
