@@ -3,26 +3,27 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Term-Multiplikation & Binome</title>
+<title>Termtrainer – Multiplikation & Addition</title>
 <style>
   body {
     font-family: system-ui, Arial, sans-serif;
     background: linear-gradient(to bottom right,#f0f4ff,#e0f7fa);
     text-align: center;
-    margin-top: 40px;
+    margin-top: 30px;
   }
-  h1 {color:#333;}
-  #task{font-size:2em;margin:20px;}
-  #result{font-size:1.3em;margin:15px;font-weight:bold;}
-  #score{font-size:1.1em;margin:10px;color:#333;}
+  h1,h2{color:#333;margin:10px 0;}
+  #task,#taskAdd{font-size:1.8em;margin:15px;}
+  #result,#resultAdd{font-size:1.3em;margin:10px;font-weight:bold;}
+  #score,#scoreAdd{font-size:1.1em;margin:8px;color:#333;}
   input{
-    padding:10px;font-size:1em;width:220px;text-align:center;
+    padding:8px;font-size:1em;width:220px;text-align:center;
   }
   button{
-    background:#007bff;color:white;border:none;padding:10px 18px;
-    margin:6px;font-size:1em;border-radius:8px;cursor:pointer;
+    background:#007bff;color:white;border:none;padding:8px 16px;
+    margin:5px;font-size:1em;border-radius:8px;cursor:pointer;
   }
   button:hover{background:#0056b3;}
+  hr{margin:30px auto;width:60%;border:1px solid #ccc;}
 </style>
 </head>
 <body>
@@ -36,82 +37,84 @@
 
 <p id="result"></p>
 
+<hr>
+
+<h2>Übung: Terme addieren & subtrahieren</h2>
+<div id="scoreAdd">Aufgabe 1 von 10 – Punkte: 0</div>
+<div id="taskAdd">lade...</div>
+
+<input type="text" id="answerAdd" placeholder="Zusammengefasster Term" autocomplete="off"><br>
+<button id="checkBtnAdd">Prüfen</button>
+<button id="newBtnAdd">Neue Aufgabe</button>
+
+<p id="resultAdd"></p>
+
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
+
+  // ------------------------- MULTIPLIKATIONSTEIL -------------------------
+
+  const COEFFS=[2,3,4,5,6,7,8,9];
+  const VARS=['a','b','m','n','p','q','x','y'];
+
   const taskEl=document.getElementById("task");
   const answerEl=document.getElementById("answer");
   const resultEl=document.getElementById("result");
   const checkBtn=document.getElementById("checkBtn");
   const newBtn=document.getElementById("newBtn");
   const scoreEl=document.getElementById("score");
-
-  const COEFFS=[2,3,4,5,6,7,8,9];
-  const VARS=['a','b','m','n','p','q','x','y'];
   let correctSolution="";
   let round=1,score=0,totalRounds=10;
 
-  function randomChoice(a){return a[Math.floor(Math.random()*a.length)];}
-  function randomSign(){return Math.random()<0.5?'-':'+';}
-  function randomCoeff(){return randomChoice(COEFFS);}
-  function randomVar(){return randomChoice(VARS);}
-  function simplify(s1,s2){return s1===s2?'+':'-';}
-  function formatCoeff(n,isVar){if(!isVar)return String(n);
-    if(n===1)return"";if(n===-1)return"-";return String(n);}
-  function sortVars(v1,v2){return [v1,v2].sort().join('');}
+  const randomChoice=a=>a[Math.floor(Math.random()*a.length)];
+  const randomSign=()=>Math.random()<0.5?'-':'+';
+  const randomCoeff=()=>randomChoice(COEFFS);
+  const randomVar=()=>randomChoice(VARS);
+  const simplify=(s1,s2)=>s1===s2?'+':'-';
+  const formatCoeff=(n,isVar)=>{
+    if(!isVar)return String(n);
+    if(n===1)return"";if(n===-1)return"-";return String(n);
+  };
+  const sortVars=(v1,v2)=>[v1,v2].sort().join('');
 
-  // einfache Terme
   function createSimpleTask(){
     const sameVar=Math.random()<0.5;
     const s1=randomSign(),s2=randomSign();
     const n1=randomCoeff(),n2=randomCoeff();
     let v1=randomVar(),v2=randomVar();
-    if(!sameVar){while(v2===v1)v2=randomVar();}
-    else v2=v1;
-
-    // Multiplikationspunkt zwischen Monomen
+    if(!sameVar){while(v2===v1)v2=randomVar();} else v2=v1;
     const aufgabe=`(${s1}${n1}${v1}) · (${s2}${n2}${v2}) = ?`;
-
     const sign=simplify(s1,s2);
     let coeff=(sign==='-')?-n1*n2:n1*n2;
-    if(v1===v2)correctSolution=`${formatCoeff(coeff,true)}${v1}²`;
-    else correctSolution=`${formatCoeff(coeff,true)}${sortVars(v1,v2)}`;
+    correctSolution=(v1===v2)?
+      `${formatCoeff(coeff,true)}${v1}²`:
+      `${formatCoeff(coeff,true)}${sortVars(v1,v2)}`;
     return aufgabe;
   }
 
-  // allgemeine Binome (jetzt 50 % gleiche erste Glieder)
   function createGeneralBinom(){
     const v=randomVar();
     const a1=randomCoeff();
-    const a2=Math.random()<0.5 ? a1 : randomCoeff();
+    const a2=Math.random()<0.5?a1:randomCoeff();
     const b=randomCoeff(),c=randomCoeff();
     const s1=randomSign(),s2=randomSign();
-
-    // Multiplikationspunkt zwischen den Binomen
     const term=`(${a1}${v} ${s1} ${b}) · (${a2}${v} ${s2} ${c}) = ?`;
-
     const sb=s1==='+'?1:-1, sc=s2==='+'?1:-1;
     const a2v2=a1*a2;
     const xCoeff=(a1*sc*c)+(a2*sb*b);
     const bc=sb*sc*b*c;
-
     let sol=`${formatCoeff(a2v2,true)}${v}²`;
     if(xCoeff>0)sol+=` + ${formatCoeff(xCoeff,true)}${v}`;
     else if(xCoeff<0)sol+=` - ${formatCoeff(Math.abs(xCoeff),true)}${v}`;
     if(bc>0)sol+=` + ${bc}`; else if(bc<0)sol+=` - ${Math.abs(bc)}`;
-
     correctSolution=sol;
     return term.replace(/\s+/g,' ');
   }
 
-  // (a v + b)(a v - b)
   function createPlusMinusBinom(){
     const v=randomVar(),a=randomCoeff(),b=randomCoeff();
-
-    // Multiplikationspunkt auch hier
-    const term=`(${a}${v} + ${b}) · (${a}${v} - ${b}) = ?`;
-
     correctSolution=`${formatCoeff(a*a,true)}${v}² - ${b*b}`;
-    return term;
+    return `(${a}${v} + ${b}) · (${a}${v} - ${b}) = ?`;
   }
 
   function newTask(){
@@ -150,13 +153,125 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultEl.innerText=`❌ Falsch! Richtig: ${correctSolution}`;
     }
     round++;
-    scoreEl.innerText=`Runde ${round>totalRounds?totalRounds:round} von ${totalRounds} – Punkte: ${score}`;
+    scoreEl.innerText=`Runde ${Math.min(round,totalRounds)} von ${totalRounds} – Punkte: ${score}`;
   }
 
   checkBtn.addEventListener("click",checkAnswer);
   newBtn.addEventListener("click",newTask);
   answerEl.addEventListener("keydown",e=>{if(e.key==="Enter")checkAnswer();});
   newTask();
+
+
+  // ------------------------- ADDITIONSTEIL -------------------------
+
+  const taskAdd=document.getElementById("taskAdd");
+  const answerAdd=document.getElementById("answerAdd");
+  const resultAdd=document.getElementById("resultAdd");
+  const checkBtnAdd=document.getElementById("checkBtnAdd");
+  const newBtnAdd=document.getElementById("newBtnAdd");
+  const scoreAdd=document.getElementById("scoreAdd");
+
+  let correctSum="",pointsAdd=0,roundAdd=1,totalAdd=10;
+
+  function createAdditionTask(){
+    const termCount=Math.floor(Math.random()*4)+2; // 2–5 Terme
+    const variable=randomVar();
+    let terms=[];
+    for(let i=0;i<termCount;i++){
+      const coeff=randomCoeff()*(Math.random()<0.5?-1:1);
+      const exp=Math.random()<0.6?1:(Math.random()<0.8?2:3); // meist 1 oder 2, selten 3
+      let t="";
+      if(exp===0)t=`${coeff}`;
+      else if(exp===1)t=`${coeff}${variable}`;
+      else t=`${coeff}${variable}^${exp}`;
+      terms.push(t);
+    }
+
+    // combine to single string with random plus/minus signs already inside
+    const display=terms.join(" + ").replace(/\+\s*-/g," - ");
+    // calculate sum:
+    let collected={};
+    for(const t of terms){
+      const match=t.match(/(-?\d+)([a-z])?(?:\^(\d))?/);
+      if(match){
+        const num=parseInt(match[1]);
+        const v=match[2]||"";
+        const exp=match[3]?parseInt(match[3]):(v?1:0);
+        const key=v+exp;
+        collected[key]=(collected[key]||0)+num;
+      }
+    }
+
+    // sort keys by exp desc, then variable alphabetically
+    const sorted=Object.entries(collected)
+      .filter(([_,v])=>v!==0)
+      .sort((a,b)=>{
+        const eA=parseInt(a[0].slice(1)||0);
+        const eB=parseInt(b[0].slice(1)||0);
+        if(eA!==eB)return eB-eA;
+        return a[0].localeCompare(b[0]);
+      });
+
+    let res="";
+    for(const [key,val] of sorted){
+      const v=key[0]==='0'?'':key[0].replace(/\d/,'');
+      const exp=key.length>1?parseInt(key.slice(1)):0;
+      if(res!==""){
+        res+=val>=0?" + ":" - ";
+      }else if(val<0){
+        res+="-";
+      }
+      const abs=Math.abs(val);
+      if(exp===0)res+=abs;
+      else if(exp===1)res+=`${abs===1?"":abs}${v}`;
+      else res+=`${abs===1?"":abs}${v}^${exp}`;
+    }
+
+    correctSum=res;
+    return display;
+  }
+
+  function newAdditionTask(){
+    resultAdd.innerText="";answerAdd.value="";
+    if(roundAdd>totalAdd){
+      taskAdd.innerText="🎉 Übungsrunde fertig!";
+      resultAdd.style.color="green";
+      resultAdd.innerText=`Endstand: ${pointsAdd}/${totalAdd} Punkte.`;
+      newBtnAdd.textContent="Neue Runde";
+      roundAdd=1;pointsAdd=0;
+      return;
+    }
+    const aufgabe=createAdditionTask();
+    taskAdd.innerText=aufgabe;
+    scoreAdd.innerText=`Aufgabe ${roundAdd} von ${totalAdd} – Punkte: ${pointsAdd}`;
+  }
+
+  function checkAdditionAnswer(){
+    const input=answerAdd.value.trim();
+    if(!input){
+      resultAdd.style.color="gray";
+      resultAdd.innerText="Bitte gib eine Lösung ein.";return;
+    }
+    const norm=s=>s.replace(/\s+/g,'').replace(/\^2/g,'²').toLowerCase();
+    const user=norm(input);
+    const corr=norm(correctSum);
+    if(user===corr){
+      resultAdd.style.color="green";
+      resultAdd.innerText="✅ Richtig!";
+      pointsAdd++;
+    }else{
+      resultAdd.style.color="red";
+      resultAdd.innerText=`❌ Falsch! Richtige Lösung: ${correctSum}`;
+    }
+    roundAdd++;
+    scoreAdd.innerText=`Aufgabe ${Math.min(roundAdd,totalAdd)} von ${totalAdd} – Punkte: ${pointsAdd}`;
+  }
+
+  checkBtnAdd.addEventListener("click",checkAdditionAnswer);
+  newBtnAdd.addEventListener("click",newAdditionTask);
+  answerAdd.addEventListener("keydown",e=>{if(e.key==="Enter")checkAdditionAnswer();});
+  newAdditionTask();
+
 });
 </script>
 </body>
