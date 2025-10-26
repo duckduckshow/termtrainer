@@ -53,7 +53,6 @@
 document.addEventListener("DOMContentLoaded",()=>{
 
   // ------------------------- MULTIPLIKATIONSTEIL -------------------------
-
   const COEFFS=[2,3,4,5,6,7,8,9];
   const VARS=['a','b','m','n','p','q','x','y'];
 
@@ -173,36 +172,38 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   let correctSum="",pointsAdd=0,roundAdd=1,totalAdd=10;
 
+  const superExp={2:"²",3:"³"};
+
   function createAdditionTask(){
     const termCount=Math.floor(Math.random()*4)+2; // 2–5 Terme
     const variable=randomVar();
     let terms=[];
     for(let i=0;i<termCount;i++){
       const coeff=randomCoeff()*(Math.random()<0.5?-1:1);
-      const exp=Math.random()<0.6?1:(Math.random()<0.8?2:3); // meist 1 oder 2, selten 3
+      const exp=Math.floor(Math.random()*4); // 0–3
       let t="";
       if(exp===0)t=`${coeff}`;
-      else if(exp===1)t=`${coeff}${variable}`;
-      else t=`${coeff}${variable}^${exp}`;
+      else t=`${coeff}${variable}${exp>1?superExp[exp]:""}`;
       terms.push(t);
     }
 
-    // combine to single string with random plus/minus signs already inside
     const display=terms.join(" + ").replace(/\+\s*-/g," - ");
-    // calculate sum:
+
     let collected={};
     for(const t of terms){
-      const match=t.match(/(-?\d+)([a-z])?(?:\^(\d))?/);
+      const match=t.match(/(-?\d+)([a-z])?(?:([²³]))?/);
       if(match){
         const num=parseInt(match[1]);
         const v=match[2]||"";
-        const exp=match[3]?parseInt(match[3]):(v?1:0);
+        let exp=0;
+        if(match[3]==="²")exp=2;
+        else if(match[3]==="³")exp=3;
+        else if(v)exp=1;
         const key=v+exp;
         collected[key]=(collected[key]||0)+num;
       }
     }
 
-    // sort keys by exp desc, then variable alphabetically
     const sorted=Object.entries(collected)
       .filter(([_,v])=>v!==0)
       .sort((a,b)=>{
@@ -214,17 +215,13 @@ document.addEventListener("DOMContentLoaded",()=>{
 
     let res="";
     for(const [key,val] of sorted){
-      const v=key[0]==='0'?'':key[0].replace(/\d/,'');
-      const exp=key.length>1?parseInt(key.slice(1)):0;
-      if(res!==""){
-        res+=val>=0?" + ":" - ";
-      }else if(val<0){
-        res+="-";
-      }
+      const v=key[0].match(/[a-z]/)?key[0]:"";
+      const exp=parseInt(key.slice(1)||0);
+      if(res!=="")res+=val>=0?" + ":" - ";
+      else if(val<0)res+="-";
       const abs=Math.abs(val);
       if(exp===0)res+=abs;
-      else if(exp===1)res+=`${abs===1?"":abs}${v}`;
-      else res+=`${abs===1?"":abs}${v}^${exp}`;
+      else res+=`${abs===1?"":abs}${v}${superExp[exp]||""}`;
     }
 
     correctSum=res;
@@ -252,7 +249,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultAdd.style.color="gray";
       resultAdd.innerText="Bitte gib eine Lösung ein.";return;
     }
-    const norm=s=>s.replace(/\s+/g,'').replace(/\^2/g,'²').toLowerCase();
+    const norm=s=>s.replace(/\s+/g,'').toLowerCase();
     const user=norm(input);
     const corr=norm(correctSum);
     if(user===corr){
