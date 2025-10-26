@@ -39,19 +39,15 @@
   hr { margin:30px auto; width:70%; border:1px solid #ccc; }
 
   /* Eingabehilfe-Buttons */
-  #shortcutButtons {
-    margin-top:8px;
-  }
-  #shortcutButtons button {
+  .shortcutButtons { margin-top:8px; }
+  .shortcutButtons button {
     background:#e3e3e3;
     color:#000;
     border:1px solid #bbb;
     padding:6px 10px;
     font-size:1.1em;
   }
-  #shortcutButtons button:hover {
-    background:#ccc;
-  }
+  .shortcutButtons button:hover { background:#ccc; }
 </style>
 </head>
 <body>
@@ -60,7 +56,7 @@
 <div id="task">lade...</div>
 
 <input type="text" id="answer" placeholder="Deine Lösung" autocomplete="off"><br>
-<div id="shortcutButtons">
+<div id="shortcutMul" class="shortcutButtons">
   <button type="button" onclick="insertSymbol('²')">²</button>
   <button type="button" onclick="insertSymbol('³')">³</button>
 </div>
@@ -76,11 +72,9 @@
 <div id="taskAdd">lade...</div>
 
 <input type="text" id="answerAdd" placeholder="Zusammengefasster Term" autocomplete="off"><br>
-<div id="shortcutButtons">
+<div id="shortcutAdd" class="shortcutButtons">
   <button type="button" onclick="insertSymbol('²')">²</button>
   <button type="button" onclick="insertSymbol('³')">³</button>
-  <button type="button" onclick="insertSymbol('+')">+</button>
-  <button type="button" onclick="insertSymbol('-')">−</button>
 </div>
 <button id="checkBtnAdd">Prüfen</button>
 <button id="newBtnAdd">Neue Aufgabe</button>
@@ -95,31 +89,32 @@ Diese Seite speichert keine persönlichen Daten und läuft vollständig lokal im
 <script>
 document.addEventListener("DOMContentLoaded",()=>{
 
-  // ------------------------- HILFSFUNKTION FÜR MOBILE BUTTONS -------------------------
+  // ------------------------- Fokus-Merker + Button-Einfügen -------------------------
+  const answerEl   = document.getElementById("answer");
+  const answerAdd  = document.getElementById("answerAdd");
+  let lastFocusedInput = answerEl;
+
+  [answerEl, answerAdd].forEach(inp=>{
+    inp.addEventListener("focus", ()=> { lastFocusedInput = inp; });
+    inp.addEventListener("click", ()=> { lastFocusedInput = inp; });
+  });
+
   window.insertSymbol = function(symbol) {
-    const active = document.activeElement;
-    if (active && active.tagName === "INPUT") {
-      const start = active.selectionStart;
-      const end = active.selectionEnd;
-      const text = active.value;
-      active.value = text.slice(0, start) + symbol + text.slice(end);
-      active.focus();
-      active.selectionStart = active.selectionEnd = start + symbol.length;
-    }
+    const target = lastFocusedInput || answerEl;
+    target.focus();
+    const start = target.selectionStart ?? target.value.length;
+    const end   = target.selectionEnd   ?? target.value.length;
+    const text  = target.value;
+    target.value = text.slice(0, start) + symbol + text.slice(end);
+    const pos = start + symbol.length;
+    requestAnimationFrame(()=>{
+      target.selectionStart = target.selectionEnd = pos;
+    });
   };
 
-  // ------------------------- MULTIPLIKATIONSTEIL -------------------------
+  // ------------------------- Gemeinsame Utils -------------------------
   const COEFFS=[2,3,4,5,6,7,8,9];
   const VARS=['a','b','m','n','p','q','x','y'];
-
-  const taskEl=document.getElementById("task");
-  const answerEl=document.getElementById("answer");
-  const resultEl=document.getElementById("result");
-  const checkBtn=document.getElementById("checkBtn");
-  const newBtn=document.getElementById("newBtn");
-  const scoreEl=document.getElementById("score");
-  let correctSolution="";
-  let round=1,score=0,totalRounds=10;
 
   const randomChoice=a=>a[Math.floor(Math.random()*a.length)];
   const randomSign=()=>Math.random()<0.5?'-':'+';
@@ -131,6 +126,18 @@ document.addEventListener("DOMContentLoaded",()=>{
     if(n===1)return"";if(n===-1)return"-";return String(n);
   };
   const sortVars=(v1,v2)=>[v1,v2].sort().join('');
+  const normMul = s => s.replace(/\s+/g,'').replace(/²/g,'^2').replace(/−/g,'-').toLowerCase();
+  const normAdd = s => s.replace(/\s+/g,'').replace(/−/g,'-').toLowerCase();
+
+  // ------------------------- MULTIPLIKATIONSTEIL -------------------------
+  const taskEl=document.getElementById("task");
+  const resultEl=document.getElementById("result");
+  const checkBtn=document.getElementById("checkBtn");
+  const newBtn=document.getElementById("newBtn");
+  const scoreEl=document.getElementById("score");
+
+  let correctSolution="";
+  let round=1,score=0,totalRounds=10;
 
   function createSimpleTask(){
     const sameVar=Math.random()<0.5;
@@ -173,7 +180,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   }
 
   function newTask(){
-    resultEl.innerText="";answerEl.value="";
+    resultEl.innerText=""; answerEl.value="";
     if(round>totalRounds){
       taskEl.innerText="🎉 Runde fertig!";
       resultEl.style.color="green";
@@ -197,9 +204,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultEl.style.color="gray";
       resultEl.innerText="Bitte gib eine Lösung ein.";return;
     }
-    const norm=s=>s.replace(/\s+/g,'').replace(/²/g,'^2').toLowerCase();
-    const user=norm(input),corr=norm(correctSolution);
-    if(user===corr){
+    if(normMul(input)===normMul(correctSolution)){
       resultEl.style.color="green";
       resultEl.innerText="✅ Richtig!";
       score++;
@@ -213,13 +218,11 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   checkBtn.addEventListener("click",checkAnswer);
   newBtn.addEventListener("click",newTask);
-  answerEl.addEventListener("keydown",e=>{if(e.key==="Enter")checkAnswer();});
+  answerEl.addEventListener("keydown",e=>{ if(e.key==="Enter")checkAnswer(); });
   newTask();
-
 
   // ------------------------- ADDITIONSTEIL -------------------------
   const taskAdd=document.getElementById("taskAdd");
-  const answerAdd=document.getElementById("answerAdd");
   const resultAdd=document.getElementById("resultAdd");
   const checkBtnAdd=document.getElementById("checkBtnAdd");
   const newBtnAdd=document.getElementById("newBtnAdd");
@@ -234,25 +237,25 @@ document.addEventListener("DOMContentLoaded",()=>{
     let terms=[];
     for(let i=0;i<termCount;i++){
       const coeff=randomCoeff()*(Math.random()<0.5?-1:1);
-      const exp=Math.floor(Math.random()*4); // 0–3
+      const exp=Math.floor(Math.random()*4);
       let t="";
       if(exp===0)t=`${coeff}`;
       else t=`${coeff}${variable}${exp>1?superExp[exp]:""}`;
       terms.push(t);
     }
-
     const display=terms.join(" + ").replace(/\+\s*-/g," - ");
+
     let collected={};
     for(const t of terms){
-      const match=t.match(/(-?\d+)([a-z])?(?:([²³]))?/);
-      if(match){
-        const num=parseInt(match[1]);
-        const v=match[2]||"";
-        let exp=0;
-        if(match[3]==="²")exp=2;
-        else if(match[3]==="³")exp=3;
-        else if(v)exp=1;
-        const key=v+exp;
+      const m=t.match(/(-?\d+)([a-z])?(?:([²³]))?/);
+      if(m){
+        const num=parseInt(m[1]);
+        const v=m[2]||"";
+        let e=0;
+        if(m[3]==="²")e=2;
+        else if(m[3]==="³")e=3;
+        else if(v)e=1;
+        const key=v+e;
         collected[key]=(collected[key]||0)+num;
       }
     }
@@ -269,12 +272,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     let res="";
     for(const [key,val] of sorted){
       const v=key[0].match(/[a-z]/)?key[0]:"";
-      const exp=parseInt(key.slice(1)||0);
+      const e=parseInt(key.slice(1)||0);
       if(res!=="")res+=val>=0?" + ":" - ";
       else if(val<0)res+="-";
       const abs=Math.abs(val);
-      if(exp===0)res+=abs;
-      else res+=`${abs===1?"":abs}${v}${superExp[exp]||""}`;
+      if(e===0)res+=abs;
+      else res+=`${abs===1?"":abs}${v}${superExp[e]||""}`;
     }
 
     correctSum=res;
@@ -302,10 +305,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       resultAdd.style.color="gray";
       resultAdd.innerText="Bitte gib eine Lösung ein.";return;
     }
-    const norm=s=>s.replace(/\s+/g,'').toLowerCase();
-    const user=norm(input);
-    const corr=norm(correctSum);
-    if(user===corr){
+    if(normAdd(input)===normAdd(correctSum)){
       resultAdd.style.color="green";
       resultAdd.innerText="✅ Richtig!";
       pointsAdd++;
