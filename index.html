@@ -170,8 +170,18 @@ document.addEventListener("DOMContentLoaded",()=>{
   const simplify=(s1,s2)=>s1===s2?'+':'-';
   const formatCoeff=(n,isVar)=>{if(!isVar)return String(n);if(n===1)return"";if(n===-1)return"-";return String(n)};
   const sortVars=(v1,v2)=>[v1,v2].sort().join('');
-  const normMul = s => s.replace(/\s+/g,'').replace(/²/g,'^2').replace(/−/g,'-').toLowerCase();
-  const normAdd = s => s.replace(/\s+/g,'').replace(/−/g,'-').toLowerCase();
+  const normMul = s => s
+  .replace(/\s+/g,'')
+  .replace(/^(\+)?/, '')      // führendes Plus entfernen
+  .replace(/²/g,'^2')
+  .replace(/−/g,'-')
+  .toLowerCase();
+
+  const normAdd = s => s
+  .replace(/\s+/g,'')
+  .replace(/^(\+)?/, '')      // führendes Plus entfernen
+  .replace(/−/g,'-')
+  .toLowerCase();
 
   // ----------------- MULTIPLIKATION -----------------
   const taskEl=document.getElementById("task");
@@ -392,3 +402,4 @@ document.addEventListener("DOMContentLoaded",()=>{
 </script>
 </body>
 </html>
+
